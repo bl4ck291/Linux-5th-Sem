@@ -1,0 +1,66 @@
+#1
+dnf group install "Development Tools"
+
+#2
+mount.cifs //192.168.1.15/XPG /mnt/share -o user=pi
+mkdir installFiles
+cp /mnt/share/Lab4/* /root/Lab4/installFiles/
+tar xvzf bastet-0.43.tgz
+dnf install boost boost-devel
+dnf install ncurses ncurses-devel
+make
+#Add to Makefile this:
+install:
+	cp ./$(PROGNAME) /usr/bin
+#now we can run the game just by writing "bastet" in any directory and the program is installed now
+
+#3
+dnf list | awk '{print $1}' > task3.log
+
+#4
+dnf repoquery --requires --resolve --recursive gcc > task4_1.log
+dnf repoquery --whatrequires libgcc > task4_2.log
+
+#5
+mkdir /root/localrepo
+cp /mnt/share/Lab4/checkinstall-1.6.2-3.el6.1.x86_64.rpm /root/localrepo/
+dnf install createrepo
+createrepo /root/localrepo/
+nano /etc/yum.repos.d/local.repo
+	[LocalRepo]
+	name=LocalRepo
+	baseurl=file:///root/localrepo
+	enabled=1
+	gpgcheck=0
+
+#6
+dnf repolist > task6.log
+
+#7
+dnf config-manager --disable \*
+dnf repolist
+nano /etc/yum.repos.d/local.repo
+	enabled=1
+dnf repolist
+dnf install checkinstall
+
+#8
+cp /mnt/share/Lab4/fortunes-ru_1.52-2_all.deb /mnt/share/Lab4/alien_8.95.tar.xz /root/
+tar xf alien_8.95.tar.xz
+dnf install perl
+cd alien_8.95
+perl Makefile.PL
+make
+make install
+alien --to-rpm fortunes-ru_1.52-2_all.deb
+rpm -ivh fortunes-ru-1.52-3.noarch.rpm
+
+#9
+dnf install https://extras.getpagespeed.com/release-el8-latest.rpm
+dnf install rpmrebuild
+dnf download nano
+rpmrebuild -e -p nano-2.9.8-1.el8.x86_64.rpm
+#Add the following line before the if statement
+	ln -s "nano" "/usr/bin/newnano"
+cd rpmbuild/RPMS/x86_64/
+rpm -i nano-2.9.8-1.el8.x86_64.rpm

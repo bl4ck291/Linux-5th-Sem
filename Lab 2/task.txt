@@ -1,0 +1,45 @@
+#To imitate raid 5 I connected three virtual hdds to the machine in virtual box
+
+#Repeat the following steps for each drive: /dev/sdb, /dev/sdc and /dev/sdd
+fdisk /dev/sdb
+	n	: new partition
+	p	: primary
+	ENTER	: default partition number (1)
+	ENTER	: default start sector
+	ENTER	: default end sector (the whole drive)
+	w	: commit changes to drive
+
+#Next we change the type to raid "autodetect" (Also repeat for every drive the following steps)
+fdisk /dev/sdb
+	t	: change partition type
+	fd	: hex code which means "Linux raid auto"
+	w	: commit changes to drive
+
+#Next we use the mdadm tool (linux software RAID) to create our RAID 5 device
+mdadm --create /dev/md5 --level=5 --raid-devices=3 /dev/sdb1 /dev/sdc1 /dev/sdd1
+
+#To view information about the RAID device use the following
+mdadm --detail /dev/md5
+#And
+cat /proc/mdstat
+
+#Format the device
+mkfs.ext4 /dev/md5
+
+#Mount the RAID filesystem
+mkdir /mnt/raid5
+mount /dev/md5 /mnt/raid5/
+
+#To permanently mount add this line in /etc/fstab
+/dev/md5               /mnt/raid5                   ext4    defaults        0 0
+
+#Now create some files or for example:
+man man > /mnt/raid5/man.txt
+
+#Now to imitate a failure we can shutdown then disconnect the device from virtual box and check the status
+mdadm --detail /dev/md5
+
+#Check if the files work
+
+#Add a new device to the machine and then add it to the raid array, check the status it will show spare rebuilding and after that go to active sync
+mdadm --detail /dev/md5

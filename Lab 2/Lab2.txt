@@ -1,0 +1,99 @@
+#1
+fdisk /dev/sda
+Use the following parameters:
+	n	: new partition
+	p	: as primary
+	3	: the number of the partition
+	ENTER	: choose the default first sector
+	+300MB	: last block is located after 300MB
+	w	: apply to disk (because it was only in memory in the steps above)
+
+#2
+blkid /dev/sda3 | awk -F '"' '{print $2}' > /root/sda3.uuid
+
+#3
+mkfs.ext4 /dev/sda3 -b 4096
+
+#4
+dumpe2fs /dev/sda3 -h
+
+#5
+tune2fs /dev/sda3 -i 2m -c 2
+
+#6
+mkdir /mnt/newdisk
+mount /dev/sda3 /mnt/newdisk -t ext4
+
+#7
+ln -s /mnt/newdisk /root/newdisk_link
+
+#8
+mkdir /mnt/newdisk/anyname
+
+#9
+Put in /etc/fstab the following, separate by tabs or spaces:
+/dev/sda3	/mnt/newdisk	ext4	noexec,noatime	0 0
+
+#10
+umount /dev/sda3
+fdisk /dev/sda
+Use the following parameters:
+	d	: delete the partition
+	3	: the number of the partition
+        n       : new partition
+        p       : as primary
+        3       : the number of the partition
+        ENTER   : choose the default first sector
+        +350MB  : last block is located after 350MB
+	NO	: don't remove the ext4 signature
+        w       : apply to disk (because it was only in memory in the steps above)
+reboot
+resize2fs /dev/sda3
+
+#11
+The filesystem needs to be unmounted first
+e2fsck /dev/sda3 -n
+
+#12
+fdisk /dev/sda
+Use the following parameters:
+        n       : new partition
+        p       : as primary
+        ENTER   : choose the default first sector
+        +12MB	: last block is located after 12MB
+        w       : apply to disk (because it was only in memory in the steps above)
+
+mkfs.ext4 /dev/sda4
+tune2fs -J location/dev/sda4 /dev/sda3
+
+#13
+To do this task I added another hdd to the machine in virtualbox, now we have sdb also
+fdisk /dev/sdb
+	n	: new partition
+	e	: extended (which is a container for logical partitions)
+	ENTER   : choose the default partition number
+        ENTER   : choose the default first sector
+        ENTER   : choose the default last sector
+	n	: new partition
+	ENTER	: choose the default first sector
+	+100MB	: the size
+	n       : new partition
+        ENTER   : choose the default first sector
+        +100MB  : the size
+	w	: apply to disk (because it was only in memory in the steps above)
+
+#14
+vgcreate vg /dev/sdb5 /dev/sdb6
+lvcreate -l 100%FREE -n lg vg
+mkfs.ext4 /dev/vg/lg
+mkdir /mnt/supernewdisk
+mount /dev/vg/lg /mnt/supernewdisk
+
+#15
+mkdir /mnt/share
+mount.cifs //192.168.1.15/XPG /mnt/share -o user=pi
+
+#16
+Put in /etc/fstab the following, separate by tabs or spaces:
+//192.168.1.15.XPG	/mnt/share	cifs	user=pi,password=mypassword,rw,iocharset=utf8	0 0
+
