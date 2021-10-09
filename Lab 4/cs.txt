@@ -8,6 +8,7 @@ cp /mnt/share/Lab4/* /root/Lab4/installFiles/
 tar xvzf bastet-0.43.tgz
 dnf install boost boost-devel
 dnf install ncurses ncurses-devel
+#These are required for make to work
 make
 #Add to Makefile this:
 install:
@@ -25,6 +26,7 @@ dnf repoquery --whatrequires libgcc > task4_2.log
 mkdir /root/localrepo
 cp /mnt/share/Lab4/checkinstall-1.6.2-3.el6.1.x86_64.rpm /root/localrepo/
 dnf install createrepo
+#createrepo not installed by default
 createrepo /root/localrepo/
 nano /etc/yum.repos.d/local.repo
 	[LocalRepo]
@@ -48,6 +50,7 @@ dnf install checkinstall
 cp /mnt/share/Lab4/fortunes-ru_1.52-2_all.deb /mnt/share/Lab4/alien_8.95.tar.xz /root/
 tar xf alien_8.95.tar.xz
 dnf install perl
+#perl is required for alien to work
 cd alien_8.95
 perl Makefile.PL
 make
@@ -58,6 +61,7 @@ rpm -ivh fortunes-ru-1.52-3.noarch.rpm
 #9
 dnf install https://extras.getpagespeed.com/release-el8-latest.rpm
 dnf install rpmrebuild
+#rpmrebuild is required to modify the install files
 dnf download nano
 rpmrebuild -e -p nano-2.9.8-1.el8.x86_64.rpm
 #Add the following line before the if statement
