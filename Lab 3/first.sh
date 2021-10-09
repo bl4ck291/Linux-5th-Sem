@@ -7,7 +7,7 @@ cat /etc/passwd | awk -F ':' '{print "user "$1 " has id "$3}' > work3.log
 chage -l root | grep "Last password change" >> work3.log
 
 #3
-groups | sed -e 's/ /, /g' >> work3.log
+cat /etc/group | awk -F ':' '{print $1}' ORS=", " >> work3.log
 
 #4
 echo "Be careful!" > /etc/skel/readme.txt
@@ -17,7 +17,6 @@ useradd u1 -p $(openssl passwd -crypt 12345678)
 
 #6
 groupadd g1
-#Note: In our virtual machine g1 already exists
 
 #7
 usermod -aG g1 u1
@@ -36,7 +35,6 @@ usermod u1 -s /usr/bin/mc
 
 #12
 useradd u2 -p $(openssl passwd -crypt 87654321)
-#Note: In our virtual machine u2 already exists
 
 #13
 mkdir /home/test13
