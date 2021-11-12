@@ -1,0 +1,21 @@
+#Edit the /etc/passwd file with the command "vipw"
+#Add the following example user:
+	testuser:x:5252:5253:This is a test user:/home/testuser:/bin/bash
+
+#We can also add a new group with "vigr"
+# I added the following group:
+	testgroup:x:5253
+
+#Create the home directory for the user and copy in it what's in /etc/skel
+mkdir /home/testuser
+cp -R /etc/skel/* /home/testuser/
+
+#Now we need to change some permissions in the users home directory
+cd /home/testuser
+chown -R testuser .
+chgrp -R testgroup .
+chmod -R u=rwx,g=r,o= .
+
+#And in the end set the password for the user
+passwd testuser
+#Note that the passwd command always uses encryption with "crypt" algorithm, so it is secured

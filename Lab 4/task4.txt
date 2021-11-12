@@ -1,0 +1,82 @@
+#To install two packages at the same time I built a new package from scratch using "rpmbuild"
+#which requires nano and vim as dependencies
+#Following is the sequence of commands needed to do this:
+
+#The following packages need to be installed to build the RPM package:
+dnf install -y rpmbuild rpmdevtools rpmlint
+
+rpmdev-setuptree
+#This command is used to create the file/directory tree to build RPM packages
+
+#Create any script for example:
+nano install.sh
+	#!/bin/bash
+	echo "This package installs nano and vim"
+
+#We place the script in a directory
+mkdir install-0.0.1
+mv install.sh install-0.0.1
+
+#We put it in a tarball archive
+tar --create --file install-0.0.1.tar.gz install-0.0.1
+
+#Move tarball into the sources directory
+mv install-0.0.1.tar.gz ~/rpmbuild/SOURCES
+
+#Create a new spec file
+rpmdev-newspec install
+
+#Modified the install.spec file to contain this:
+---------------------------------------------------------------------------------
+Name:           install
+Version:        0.0.1
+Release:        1%{?dist}
+Summary:        Installs nano and vim
+
+License:        GPL
+Source0:        %{name}-%{version}.tar.gz
+
+Requires:       bash
+Requires:       nano
+Requires:       vim
+
+%description
+Test task for lab4 linux admin to make a package install 2 programms
+
+%prep
+%setup -q
+
+
+%install
+rm -rf $RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT/%{_bindir}
+cp %{name}.sh $RPM_BUILD_ROOT/%{_bindir}
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+
+%files
+%{_bindir}/%{name}.sh
+
+
+
+%changelog
+* Sun Oct 10 2021 root
+- First version
+
+---------------------------------------------------------------------------------
+
+#We check the spec file for errors
+rpmlint ~/rpmbuild/SPECS/install.spec
+
+#We build the binary package
+rpmbuild -bb ~/rpmbuild/SPECS/install.spec
+
+#The built rpm will appear in ~/rpmbuild/RPMS/x86_64/
+#Remove nano and vim from the system if they exist
+dnf remove nano
+dnf remove vim
+
+#install them using our newly created package
+dnf install ~/rpmbuild/RPMS/x86_64/install-0.0.1-1.el8.x86_64.rpm
